@@ -5,6 +5,7 @@
 **执行步骤：**
 - 创建并打开（多个）Android虚拟机
 - 修改模拟点击脚本 `simulate.py`   
+
 ```
 print '\n======================================='
 print 'start simulate(use monkeyrunner)'
@@ -22,6 +23,7 @@ print 'simulate ended'
 print '=======================================\n'
 ```
 - 修改 `wxsniffer.py` 脚本主逻辑   
+
 ```
 sniffer = WxSniffer()
 sniffer.start_winpcap()
@@ -32,4 +34,5 @@ while True:
 	print sniffer.get_wxarticle_state('MzAwNTA2NjE2OA==', '205059655', '9fb1b7d533d39b65dde7c1d9eb9ab9c7', '1')
 	time.sleep(30)
 ```
+
 - 执行脚本 `wxsniffer.py`
