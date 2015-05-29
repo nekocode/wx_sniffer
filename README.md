@@ -6,7 +6,7 @@
 - 创建并打开（多个）Android虚拟机
 - 修改模拟点击脚本 `simulate.py`   
 
-```
+``` python
 print '\n======================================='
 print 'start simulate(use monkeyrunner)'
 print '=======================================\n'
@@ -22,9 +22,11 @@ print '\n======================================='
 print 'simulate ended'
 print '=======================================\n'
 ```
+
 - 修改 `wxsniffer.py` 脚本主逻辑   
 
-```
+
+``` python
 sniffer = WxSniffer()
 sniffer.start_winpcap()
 while True:
