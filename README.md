@@ -1,6 +1,6 @@
 #微信公众号uin，key捕获脚本
 
-环境：`Windows`, `Python 2.7`, `Android SDK`, `Winpcap`, `dkpt`, `httplib2`
+环境：`Windows`, `Python 2.7`, `Android SDK`, `Winpcap`, `dpkt`, `httplib2`
 
 **执行步骤：**
 - 创建并打开（多个）Android虚拟机
