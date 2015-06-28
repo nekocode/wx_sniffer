@@ -14,6 +14,7 @@ import dpkt
 import thread
 import urlparse
 from threading import Thread
+from selenium import webdriver
 
 
 class WxSniffer(Thread):
@@ -152,17 +153,45 @@ class WxSniffer(Thread):
 #             key = params['key'][0]
 
 
-print '\n======================================='
-print 'start winpcap'
-print '=======================================\n'
-sniffer = WxSniffer()
-sniffer.start()
-while True:
-    time.sleep(2)
-    print sniffer.get_wxarticle_state('http://mp.weixin.qq.com/s?__biz=MjM5Njc0Njc4MQ==&mid=207205228&idx=1&sn=9e78fb81b2ce947d82881cb4ba0dbb79&key=af154fdc40fed0032904e0d3e853027e7ec082dbd2577e90041cb0a306a381e57b811886e1838fc22d04eabe30ffac97&ascene=1&uin=MzQ4ODY2OTU1&devicetype=Windows+8&version=61010029&pass_ticket=Lnb9s1kCfWm8Cw1kVb2eCkiHu1US%2B7XebBq35z3cuK0Xs2X5HSNLAFxkbnTRi2RQ')
+# print '\n======================================='
+# print 'start winpcap'
+# print '=======================================\n'
+# sniffer = WxSniffer()
+# sniffer.start()
+# while True:
+#     time.sleep(2)
+#     print sniffer.get_wxarticle_state('http://mp.weixin.qq.com/s?__biz=MjM5Njc0Njc4MQ==&mid=207205228&idx=1&sn=9e78fb81b2ce947d82881cb4ba0dbb79&key=af154fdc40fed0032904e0d3e853027e7ec082dbd2577e90041cb0a306a381e57b811886e1838fc22d04eabe30ffac97&ascene=1&uin=MzQ4ODY2OTU1&devicetype=Windows+8&version=61010029&pass_ticket=Lnb9s1kCfWm8Cw1kVb2eCkiHu1US%2B7XebBq35z3cuK0Xs2X5HSNLAFxkbnTRi2RQ')
 
 # while True:
 #     sniffer.simulate_open_wxarticle(5554)
 #     time.sleep(5)
 #     print sniffer.get_wxarticle_state('MzAwNTA2NjE2OA==', '205059655', '9fb1b7d533d39b65dde7c1d9eb9ab9c7', '1')
 #     time.sleep(30)
+
+# sniffer = WxSniffer()
+# sniffer.start()
+
+class Article(object):
+    def __init__(self, web_element):
+        a = web_element.find_element_by_class_name('news_lst_tab')
+        self.title = a.text
+        self.url = a.get_attribute('href')
+        p = web_element.find_elements_by_tag_name('p')
+        self.review = p[0].text
+        self.date = p[1].text
+        self.read_num = ''
+        self.like_num = ''
+
+def get_gzh_articles(openid):
+    driver = webdriver.PhantomJS()
+    driver.get('http://weixin.sogou.com/gzh?openid=' + openid)
+    articles = []
+    elements = driver.find_elements_by_class_name('txt-box')
+    title = elements[0].find_element_by_id('weixinname').text + ' (' + elements[0].find_element_by_tag_name('span').text + ')'
+    for i in range(1, len(elements)):
+        articles.append(Article(elements[i]))
+    driver.quit()
+    return title, articles
+
+_title, dd = get_gzh_articles('oIWsFt6S9QnZvoC1RZtWxvm-vPQ4')
+print _title
