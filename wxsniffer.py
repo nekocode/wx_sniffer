@@ -56,15 +56,15 @@ class WxSniffer(Thread):
         # content = content.decode('utf-8', 'replace').encode(sys.getfilesystemencoding())
         try:
             rlt_json = json.loads(content)
-            _rlt = rlt_json['appmsgstat']['read_num'], rlt_json['appmsgstat']['like_num']
+            return rlt_json['appmsgstat']['read_num'], rlt_json['appmsgstat']['like_num']
         except Exception:
-            _rlt = None
+            return None
             # self.simulate_open_wxarticle(1)
-        return _rlt
 
     def on_key_getted(self):
-        print 'uin: ' + self.__uin
-        print 'key: ' + self.__key
+        pass
+        # print 'uin: ' + self.__uin
+        # print 'key: ' + self.__key
 
     def run(self):
         def _packet_handler(param, header, pkt_data):
@@ -168,8 +168,8 @@ class WxSniffer(Thread):
 #     print sniffer.get_wxarticle_state('MzAwNTA2NjE2OA==', '205059655', '9fb1b7d533d39b65dde7c1d9eb9ab9c7', '1')
 #     time.sleep(30)
 
-# sniffer = WxSniffer()
-# sniffer.start()
+sniffer = WxSniffer()
+sniffer.start()
 
 class Article(object):
     def __init__(self, web_element):
@@ -194,4 +194,19 @@ def get_gzh_articles(openid):
     return title, articles
 
 _title, dd = get_gzh_articles('oIWsFt6S9QnZvoC1RZtWxvm-vPQ4')
+print '\n======================================='
 print _title
+print '=======================================\n'
+
+for d in dd:
+    print u'标题：' + d.title
+    print u'内容：' + d.review
+    print u'日期：' + d.date
+    while True:
+        rlt = sniffer.get_wxarticle_state(d.url)
+        time.sleep(2)
+        if rlt:
+            break
+    d.read_num, d.like_num = rlt
+    print u'阅读数：' + str(d.read_num) + u'\t点赞数：' + str(d.like_num)
+    print '======================================='
