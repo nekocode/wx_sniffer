@@ -74,8 +74,10 @@ class CacheThread(Thread):
         if not self.__loop:
             cache_gzh_articles(self.__openid)
         else:
-            for k in html_cache:
-                cache_gzh_articles(k)
+            while True:
+                for k in html_cache:
+                    cache_gzh_articles(k)
+                    time.sleep(4)
                 time.sleep(300)
 
 def cache_gzh_articles(openid):
