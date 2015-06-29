@@ -65,8 +65,8 @@ class WxSniffer(Thread):
 
     def on_key_getted(self):
         pass
-        # print 'uin: ' + self.__uin
-        # print 'key: ' + self.__key
+        print 'uin: ' + self.__uin
+        print 'key: ' + self.__key
 
     def run(self):
         def _packet_handler(param, header, pkt_data):
@@ -195,20 +195,20 @@ def get_gzh_articles(openid):
     driver.quit()
     return title, articles
 
-_title, dd = get_gzh_articles('oIWsFt6S9QnZvoC1RZtWxvm-vPQ4')
-print '\n======================================='
-print _title
-print '=======================================\n'
-
-for d in dd:
-    print u'标题：' + d.title
-    # print u'内容：' + d.review
-    print u'日期：' + d.date
-    while True:
-        rlt = sniffer.get_wxarticle_state(d.url)
-        time.sleep(2)
-        if rlt:
-            break
-    d.read_num, d.like_num = rlt
-    print u'阅读数：' + str(d.read_num) + u'\t点赞数：' + str(d.like_num)
-    print '======================================='
+# _title, dd = get_gzh_articles('oIWsFt6S9QnZvoC1RZtWxvm-vPQ4')
+# print '\n======================================='
+# print _title
+# print '=======================================\n'
+#
+# for d in dd:
+#     print u'标题：' + d.title
+#     # print u'内容：' + d.review
+#     print u'日期：' + d.date
+#     while True:
+#         rlt = sniffer.get_wxarticle_state(d.url)
+#         time.sleep(2)
+#         if rlt:
+#             break
+#     d.read_num, d.like_num = rlt
+#     print u'阅读数：' + str(d.read_num) + u'\t点赞数：' + str(d.like_num)
+#     print '======================================='
