@@ -31,8 +31,8 @@ class WxSniffer(Thread):
         'X-Requested-With': 'XMLHttpRequest'
     }
 
-    __uin = 'MTkzMjY4MDUxNA%3D%3D'
-    __key = 'c468684b929d2be2745898b4bc6a82fffe1638ec75ef8fa872dcbc6079ab41ec99151dba3caf92c2a01322534a3ec72b'
+    __uin = ''
+    __key = ''
     __scopit = '\simulate.py '
 
     PHAND = CFUNCTYPE(None, POINTER(c_ubyte), POINTER(pcap_pkthdr), POINTER(c_ubyte))
@@ -42,6 +42,8 @@ class WxSniffer(Thread):
         os.system('monkeyrunner ' + os.getcwd() + self.__scopit + str(emulator_id))
 
     def get_wxarticle_state(self, url):
+        if len(self.__key) == 0:
+            return None
         query = urlparse.urlparse(url).query
         params = urlparse.parse_qs(query)
         __biz = params["__biz"][0]
@@ -200,7 +202,7 @@ print '=======================================\n'
 
 for d in dd:
     print u'标题：' + d.title
-    print u'内容：' + d.review
+    # print u'内容：' + d.review
     print u'日期：' + d.date
     while True:
         rlt = sniffer.get_wxarticle_state(d.url)
