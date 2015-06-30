@@ -8,8 +8,8 @@ import tornado.web
 import urlparse
 import json
 import httplib2
-from selenium import webdriver
 from threading import Thread
+import weixin_sougou
 
 __send_headers = {
     'Host': 'mp.weixin.qq.com',
@@ -26,13 +26,11 @@ __send_headers = {
 
 global uin
 global key
-global html_cache
+global gzh_cache
 global caching_tasks_map
 uin = 'MjYxMjk5NTcxNA=='
-key = 'af154fdc40fed003a2cc2d85d51f776fe0ece39d0c7b9db211b14292833abf15150633dd4e0907ef5120a7adc4c89097'
-html_cache = {
-    'no_cache': u'数据正在缓冲，请稍后再尝试请求'
-}
+key = 'af154fdc40fed003ee9c38ad254e00ee07a23334f226598394d116e134e413d06c52aef44d401f6c0cb288853929bf03'
+gzh_cache = {}
 caching_tasks_map = {}
 
 
@@ -69,51 +67,45 @@ class CacheThread(Thread):
         self.__loop = loop
 
     def run(self):
-        global html_cache
+        global gzh_cache
         global caching_tasks_map
         if not self.__loop:
             cache_gzh_articles(self.__openid)
         else:
+            print time.strftime('%m-%d %H:%M start autorefresh.', time.localtime(time.time()))
             while True:
-                for k in html_cache:
+                for k in gzh_cache:
+                    print 'caching ' + k
                     cache_gzh_articles(k)
                     time.sleep(4)
+                print time.strftime('%m-%d %H:%M refresh suc.', time.localtime(time.time()))
                 time.sleep(300)
 
 def cache_gzh_articles(openid):
-    global html_cache
+    global gzh_cache
     if openid in caching_tasks_map:
         return
     caching_tasks_map[openid] = ''
 
     try:
-        driver = webdriver.PhantomJS()
-        driver.get('http://weixin.sogou.com/gzh?openid=' + openid)
-        articles = []
-        elements = driver.find_elements_by_class_name('txt-box')
-        title = elements[0].find_element_by_id('weixinname').text + ' (' + elements[0].find_element_by_tag_name('span').text + ')'
-        for i in range(1, len(elements)):
-            articles.append(Article(elements[i]))
-        driver.quit()
-        content = '=======================================</br>'
-        content += title + '</br>'
-        content += '=======================================</br>'
-        for article in articles:
-            content += u'标题：<a href="' + article.url + '">' + article.title + '</a></br>'
-            content += u'日期：' + article.date + '</br>'
-            while True:
-                rlt = get_wxarticle_state(article.url)
-                time.sleep(2)
-                if rlt:
-                    break
-            article.read_num, article.like_num = rlt
-            content += u'阅读数：' + str(article.read_num) + u'\t点赞数：' + str(article.like_num) + '</br>'
-            content += '=======================================</br>'
+        cookies = weixin_sougou.update_cookies()
+        gzh_info = weixin_sougou.get_account_info(openid, cookies=cookies)
+        gzh_articles = weixin_sougou.parse_list(openid)
+        gzh = dict(info=gzh_info, articles=gzh_articles)
+
+        # driver = webdriver.PhantomJS()
+        # driver.get('http://weixin.sogou.com/gzh?openid=' + openid)
+        # articles = []
+        # elements = driver.find_elements_by_class_name('txt-box')
+        # title = elements[0].find_element_by_id('weixinname').text + ' (' + elements[0].find_element_by_tag_name('span').text + ')'
+        # for i in range(1, len(elements)):
+        #     articles.append(Article(elements[i]))
+        # driver.quit()
     except Exception:
         # todo:需要决定是否将没有的公众号也加入到map中
-        content = u'不存在该公众号，请检查openid是否输入错误'
+        gzh = dict()
 
-    html_cache[openid] = content
+    gzh_cache[openid] = gzh
     caching_tasks_map.pop(openid)
 
 
@@ -134,16 +126,38 @@ class MainHandler(tornado.web.RequestHandler):
         pass
 
     def get(self, openid):
-        global html_cache
+        global gzh_cache
         # openid = self.get_query_argument('openid')
         if not openid:
             self.write(u'没有指定openid')
             return
-        if openid not in html_cache:
-            self.write(html_cache['no_cache'])
+        if openid not in gzh_cache:
+            self.write(u'数据正在缓冲，请稍后再尝试请求')
             CacheThread(openid).start()
             return
-        self.write(html_cache[openid])
+        gzh = gzh_cache[openid]
+        if 'info' not in gzh:
+            self.write(u'请确定公众号openid无误')
+            return
+
+        info = gzh['info']
+        content = '=======================================</br>'
+        content += info['name'] + u'(微信号:' + info['account'] + ')</br>'
+        content += '=======================================</br>'
+        articles = gzh['articles']
+        for article in articles:
+            content += u'标题：<a href="' + article['link'] + '">' + article['title'] + '</a></br>'
+            content += u'日期：' + article['date'] + '</br>'
+            while True:
+                rlt = get_wxarticle_state(article['link'])
+                time.sleep(2)
+                if rlt:
+                    break
+            article['read_num'], article['like_num'] = rlt
+            content += u'阅读数：' + str(article['read_num']) + u'\t点赞数：' + str(article['like_num']) + '</br>'
+            content += '=======================================</br>'
+
+        self.write(content)
 
 
 class UpdateKeyHandler(tornado.web.RequestHandler):
@@ -166,7 +180,8 @@ application = tornado.web.Application([
     (r"/key", UpdateKeyHandler)
 ], **settings)
 
+
 if __name__ == "__main__":
+    CacheThread(loop=True).start()
     application.listen(8888)
     tornado.ioloop.IOLoop.instance().start()
-    CacheThread(loop=True).start()
