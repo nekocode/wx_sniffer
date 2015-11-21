@@ -1,8 +1,8 @@
-#微信公众号 uin，key 捕获脚本
+#微信公众号 uin，key 捕获脚本（获取微信公众号文章阅读量）
 
 ### 本项目已经有更完善的解决方案
 **使用 Android System Exploit 配合虚拟机抓取，成功率高达 90% 以上，且能拓展到其他一些用处上。**
-**因各种原因不便开源。有意愿合作者可联系作者本人。**
+详情请看：[**wechat_webview_launch**]](https://github.com/nekocode/wechat_webview_launch)
 
 ### Old version
 环境：`Windows`, `Python 2.7`, `Android SDK`, `Winpcap`, `dpkt`, `httplib2`
